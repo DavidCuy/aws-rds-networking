@@ -9,6 +9,8 @@ Con este repositorio se podrá desplegar toda la infraestructura de base de dato
 
 Todos los recursos generados son bajo el esquema "Bajo demanda"
 
+![Diagrama de la arquitectura generada](arquitectura-aws-simple.png)
+
 ## project_properties.toml
 
 ``` toml
