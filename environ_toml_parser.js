@@ -1,9 +1,17 @@
 const toml = require('toml');
-const concat = require('concat-stream');
 const fs = require('fs');
 
 const argv = require('minimist')(process.argv.slice(2));
 
+/**
+ * This function reads a nested key from a data object using dot notation.
+ * It recursively traverses the object to find the specified key.
+ *
+ * @param {string} inputDotKey - The dot-separated key to be read from the data object.
+ * @param {object} data - The data object containing the nested keys.
+ *
+ * @returns {any} - The value associated with the specified key in the data object.
+ */
 const read_by_dot_notation = (input_dot_key, data) => {
     let keys = input_dot_key.split('.');
 
