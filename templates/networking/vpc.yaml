@@ -156,7 +156,7 @@ Resources:
   VPCParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub "/config/infra/${AppName}/vpc_id"
+      Name: !Sub "/config/infra/${EnvironmentName}/${AppName}/vpc_id"
       Type: String
       Value: !Ref VPC
 
