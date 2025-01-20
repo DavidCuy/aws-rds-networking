@@ -70,10 +70,6 @@ Parameters:
     Type: String
     Description: Type of the Amazon EC2 instance to use for EC2 instances. Allowed values at https://aws.amazon.com/es/ec2/instance-types/
     Default: 't3.micro'
-  Ec2SshPort:
-    Type: Number
-    Description: SSH port for the EC2 instances.
-    Default: 22
 
 Conditions:
   CreateBastion: !Equals ['true', !Ref EC2CreateBastion]
@@ -127,13 +123,9 @@ Resources:
         EnvironmentName: !Ref EnvironmentName
         AppName: !Ref AppName
         Name: !Sub ${EnvironmentName}-${AppName}-Business
-        PrivateRouteTable: !GetAtt StackAccessNetworkRules.Outputs.PrivateRouteTable
         VPCData: !GetAtt StackVPCNetwork.Outputs.VPCID
-        KeyPairSSM: !Sub '/config/infra/${AppName}/key-pair'
-        SourceCidr: 0.0.0.0/0
         LatestAMI: !Ref Ec2ImageName
         InstanceType: !Ref Ec2InstanceType
-        SshPort: !Ref Ec2SshPort
       TimeoutInMinutes: 60
   
   StackRDS:

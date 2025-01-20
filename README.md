@@ -41,7 +41,6 @@ db_port = "5432" # Puerto de la base de datos
 create_bastion = 'true' # Indica si se debe crear el bastion o no
 image_name = "/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-x86_64-gp2" # Imagen a utilizar - Se recomienda utilizar imágenes de Linux AWS para facilitar las conexiones de tunel a través del session-manager
 instance_type = "t3.micro" # Tipo de instancia de la EC2 a crear
-ssh_port = 5210 # Puerto SSH de la instancia
 
 ```
 
