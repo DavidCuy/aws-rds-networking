@@ -2,6 +2,15 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::LanguageExtensions'
 Description: Internet Gateway configuration infra
 Parameters:
+  EnvironmentName:
+    Description: Specify the Environment type of the stack.
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - qa
+      - staging
+      - prod
   AppName:
     Type: String
   Name:
@@ -11,10 +20,6 @@ Parameters:
   VPCID:
     Type: AWS::EC2::VPC::Id
     Description: Choose which VPC the security groups should be deployed to
-
-  PublicSubnets:
-    Type: CommaDelimitedList
-    Description: List of names of network subnets
 
 Resources:
   InternetGateway:
@@ -30,59 +35,9 @@ Resources:
       InternetGatewayId: !Ref InternetGateway
       VpcId: !Ref VPCID
 
-  #This One
-  'Fn::ForEach::ElasticIPs':
-    - SubnetName
-    - !Ref PublicSubnets
-    - 'ElasticIP${SubnetName}':
-        Type: AWS::EC2::EIP
-        DependsOn: InternetGatewayAttachment
-        Properties:
-          Domain: vpc
-          Tags:
-            - Key: Name
-              Value: !Sub ${Name}-eip-${SubnetName}
-
-  'Fn::ForEach::NatGateways':
-    - SubnetName
-    - !Ref PublicSubnets
-    - 'NatGateway${SubnetName}':
-        Type: AWS::EC2::NatGateway
-        Properties:
-          AllocationId: !GetAtt 
-            - !Sub 'ElasticIP${SubnetName}'
-            - AllocationId
-          SubnetId: !Sub '{{resolve:ssm:/config/infra/${AppName}/public_subnet/${SubnetName}}}'
-          Tags:
-            - Key: Name
-              Value: !Sub ${Name}-nat-${SubnetName}
-  
-  'Fn::ForEach::NatGatewaysSSM':
-    - SubnetName
-    - !Ref PublicSubnets
-    - 'NatGateway${SubnetName}SSM':
-        Type: AWS::SSM::Parameter
-        Properties:
-          Name: !Sub "/config/infra/${AppName}/ng/${SubnetName}"
-          Type: String
-          Value: !GetAtt 
-            - !Sub 'NatGateway${SubnetName}'
-            - NatGatewayId
-
-
 Outputs:
   StackName:
     Value: !Sub '${AWS::StackName}'
 
   InternetGateway:
     Value: !Ref InternetGateway
-
-  'Fn::ForEach::NatGatewayOutputs':
-    - SubnetName
-    - !Ref PublicSubnets
-    - 'NatGateway${SubnetName}':
-        Value: !GetAtt 
-          - !Sub 'NatGateway${SubnetName}'
-          - NatGatewayId
-        Export:
-          Name: !Sub '${AWS::StackName}-NatGateway${SubnetName}'

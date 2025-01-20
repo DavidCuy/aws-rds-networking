@@ -97,6 +97,7 @@ Resources:
     Properties:
       TemplateURL: !Sub 'https://{{resolve:ssm:/config/${EnvironmentName}/${AppName}/infra/bucket/artifacts}}.s3.${AWS::URLSuffix}/${AppName}/deploys/networking-db/infra/networking/nat-ig-gateways.yaml'
       Parameters:
+        EnvironmentName: !Ref EnvironmentName
         AppName: !Ref AppName
         Name: !Sub ${EnvironmentName}-${AppName}-network-nat
         VPCID: !GetAtt StackVPCNetwork.Outputs.VPCID
