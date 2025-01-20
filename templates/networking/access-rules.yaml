@@ -69,6 +69,12 @@ Resources:
       SourceSecurityGroupId: !GetAtt SecurityGroup.GroupId
       IpProtocol: '-1'
   
+  ApplicationSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Application
+      VpcId: !Ref VPC
+  
   PrivateRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -150,3 +156,7 @@ Outputs:
   SG:
     Description: A reference to the security group
     Value: !Ref SecurityGroup
+  
+  ApplicationSGId:
+    Description: The ECS service security group associated
+    Value: !GetAtt ApplicationSecurityGroup.GroupId

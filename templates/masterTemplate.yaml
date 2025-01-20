@@ -133,12 +133,13 @@ Resources:
     Properties:
       TemplateURL: !Sub 'https://{{resolve:ssm:/config/${EnvironmentName}/${AppName}/infra/bucket/artifacts}}.s3.${AWS::URLSuffix}/${AppName}/deploys/networking-db/infra/rds.yaml'
       Parameters:
-        Environment: !Ref EnvironmentName
+        EnvironmentName: !Ref EnvironmentName
         AppName: !Ref AppName
         Name: !Sub ${EnvironmentName}-${AppName}-Data
         BastionSG: !If [CreateBastion, !GetAtt StackBastion.Outputs.BastionSG, '-']
         BastionCreated: !Ref EC2CreateBastion
         BusinessSG: !GetAtt StackAccessNetworkRules.Outputs.SG
+        ApplicationSG: !GetAtt StackAccessNetworkRules.Outputs.ApplicationSGId
         VPCData: !GetAtt StackVPCNetwork.Outputs.VPCID
 
         RdsInstanceClass: !Ref RdsInstanceClass
