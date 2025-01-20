@@ -6,10 +6,6 @@ Parameters:
     Type: String
   Name:
     Type: String
-  KeyPairSSM:
-    Type: String
-  PrivateRouteTable:
-    Type: String
   VPCData:
     Description: VPCID of data
     Type: String
@@ -23,23 +19,6 @@ Parameters:
     AllowedValues:
       - t3.micro
     Default: t3.micro
-  SourceCidr:
-    Description: >-
-      What is the CIDR Block of IPv4 IP addresses allowed to access your Bastion
-      Host via SSH?
-    Type: String
-    AllowedPattern: >-
-      ^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(/([0-9]|[1-2][0-9]|3[0-2]))?$
-    ConstraintDescription: The value must be valid IPv4 CIDR block.
-    Default: 0.0.0.0/0
-  SshPort:
-    Description: >-
-      What port number would you like to use to connect to your Bastion Host
-      over SSH?
-    Type: Number
-    Default: 5210
-    MinValue: 22
-    MaxValue: 65535
 Resources:
   KeyPairBastion:
     Type: AWS::EC2::KeyPair
@@ -49,7 +28,7 @@ Resources:
   SSMKeyPairBastion:
     Type: 'AWS::SSM::Parameter'
     Properties:
-      Name: !Sub '${KeyPairSSM}'
+      Name: !Sub '/config/infra/${EnvironmentName}/${AppName}/key-pair'
       Tier: Standard
       Type: String
       Value: !Ref KeyPairBastion
@@ -60,6 +39,29 @@ Resources:
       GroupName: no-ingress-sg-Ec2
       GroupDescription: Security group with no ingress rule for ec2
       VpcId: !Ref VPCData
+  
+  BastionLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub ${AWS::StackName}-launch-template
+      LaunchTemplateData:
+        ImageId: !Ref LatestAMI
+        IamInstanceProfile:
+          Arn: !GetAtt BastionInstanceProfile.Arn
+        InstanceType: !Ref InstanceType
+        SecurityGroupIds:
+          - !Ref BastionSG
+        KeyName: !Ref KeyPairBastion
+        BlockDeviceMappings: 
+          - DeviceName: /dev/xvda
+            Ebs: 
+              VolumeSize: 150
+              DeleteOnTermination: true
+        UserData: 
+          Fn::Base64: !Sub |
+            #!/bin/bash -x
+            yum install -y aws-cfn-bootstrap
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource myASG --region ${AWS::Region}
 
   BastionASG:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
@@ -68,12 +70,14 @@ Resources:
         - '-'
         - - !Ref Name
           - BastionASG
-      LaunchConfigurationName: !Ref BastionLaunchConfig
+      LaunchTemplate:
+        LaunchTemplateId: !Ref BastionLaunchTemplate
+        Version: !GetAtt BastionLaunchTemplate.LatestVersionNumber
       VPCZoneIdentifier:
         Fn::Transform:
             Name: 'read-ssm-from-path'
             Parameters:
-              Path: !Sub '/config/infra/${AppName}/private_subnet/'
+              Path: !Sub '/config/infra/${EnvironmentName}/${AppName}/private_subnet/'
       MinSize: '1'
       DesiredCapacity: '1'
       MaxSize: '1'
@@ -84,26 +88,6 @@ Resources:
             - - Name
               - BastionHost
           PropagateAtLaunch: true
-  BastionLaunchConfig:
-    Type: 'AWS::AutoScaling::LaunchConfiguration'
-    Properties:
-      IamInstanceProfile: !GetAtt
-        - BastionInstanceProfile
-        - Arn
-      AssociatePublicIpAddress: false
-      ImageId: !Ref LatestAMI
-      InstanceType: !Ref InstanceType
-      KeyName: !Ref KeyPairBastion
-      SecurityGroups:
-        - !Ref BastionSG
-  SecurityGroupSshIngressRule:
-    Type: 'AWS::EC2::SecurityGroupIngress'
-    Properties:
-      GroupId: !Ref BastionSG
-      IpProtocol: tcp
-      FromPort: !Ref SshPort
-      ToPort: !Ref SshPort
-      CidrIp: !Ref SourceCidr
   BastionRole:
     Type: 'AWS::IAM::Role'
     Properties:

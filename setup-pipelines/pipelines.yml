@@ -22,18 +22,6 @@ Parameters:
     Type: String
     Description: Template name to use in cloudformation deploy.
     Default: 'masterTemplate.zip'
-  VpcCidr:
-    Type: String
-    Description: Network subnet for routing
-    Default: '10.61.0.0/16'
-  VpcMaskForPrivate:
-    Type: String
-    Description: Mask to apply to IPs at private subnets
-    Default: '/24'
-  VpcMaskForPublic:
-    Type: String
-    Description: Mask to apply to IPs at public subnets
-    Default: '/24'
   VpcNamesForPrivate:
     Type: String
     Description: Comma delimited list for names of private subnets
@@ -96,10 +84,6 @@ Parameters:
     Type: String
     Description: Type of the Amazon EC2 instance to use for EC2 instances. Allowed values at https://aws.amazon.com/es/ec2/instance-types/
     Default: 't3.micro'
-  Ec2SshPort:
-    Type: Number
-    Description: SSH port for the EC2 instances.
-    Default: 22
 Resources:
   PipelineEventRole:
     Type: 'AWS::IAM::Role'
@@ -190,7 +174,7 @@ Resources:
                   - ROLCloudFormation
                   - Arn
                 ParameterOverrides: !Sub >-
-                  {"EnvironmentName":"${EnvironmentName}","AppName":"/config/${EnvironmentName}/infra/project/AppName","RdsInstanceClass":"${RdsInstanceClass}","RdsStorageGib":"${RdsStorageGib}","RdsEngine":"${RdsEngine}","RdsVersion":"${RdsVersion}","DbName":"${DbName}","DbUserName":"${DbUserName}","DbPort":"${DbPort}","EC2CreateBastion":"${EC2CreateBastion}","Ec2ImageName":"${Ec2ImageName}","Ec2InstanceType":"${Ec2InstanceType}","Ec2SshPort":"${Ec2SshPort}","VpcCidr":"${VpcCidr}","VpcMaskForPrivate":"${VpcMaskForPrivate}","VpcMaskForPublic":"${VpcMaskForPublic}","VpcNamesForPrivate":"${VpcNamesForPrivate}","VpcNamesForPublic":"${VpcNamesForPublic}","VpcEnableS3Gateway":"${VpcEnableS3Gateway}"}
+                  {"EnvironmentName":"${EnvironmentName}","AppName":"/config/${EnvironmentName}/infra/project/AppName","RdsInstanceClass":"${RdsInstanceClass}","RdsStorageGib":"${RdsStorageGib}","RdsEngine":"${RdsEngine}","RdsVersion":"${RdsVersion}","DbName":"${DbName}","DbUserName":"${DbUserName}","DbPort":"${DbPort}","EC2CreateBastion":"${EC2CreateBastion}","Ec2ImageName":"${Ec2ImageName}","Ec2InstanceType":"${Ec2InstanceType}","VpcNamesForPrivate":"${VpcNamesForPrivate}","VpcNamesForPublic":"${VpcNamesForPublic}","VpcEnableS3Gateway":"${VpcEnableS3Gateway}"}
               RunOrder: 1
               InputArtifacts:
                 - Name: SourceOutput

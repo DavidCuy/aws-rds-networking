@@ -38,7 +38,6 @@ jobs:
       ec2_create_bastion: ${{ steps.set-properties-variables.outputs.ec2_create_bastion }}
       ec2_image_name: ${{ steps.set-properties-variables.outputs.ec2_image_name }}
       ec2_instance_type: ${{ steps.set-properties-variables.outputs.ec2_instance_type }}
-      ec2_ssh_port: ${{ steps.set-properties-variables.outputs.ec2_ssh_port }}
 
     steps:
       - uses: actions/checkout@v4
@@ -70,7 +69,6 @@ jobs:
           echo "ec2_create_bastion=$(bash read_from_properties.sh ./project_properties.toml ec2.bastion.create_bastion)" >> $GITHUB_OUTPUT
           echo "ec2_image_name=$(bash read_from_properties.sh ./project_properties.toml ec2.bastion.image_name)" >> $GITHUB_OUTPUT
           echo "ec2_instance_type=$(bash read_from_properties.sh ./project_properties.toml ec2.bastion.instance_type)" >> $GITHUB_OUTPUT
-          echo "ec2_ssh_port=$(bash read_from_properties.sh ./project_properties.toml ec2.bastion.ssh_port)" >> $GITHUB_OUTPUT
   
   deploy-macros:
     name: Deploy ${{ inputs.environment }} macros
@@ -135,7 +133,6 @@ jobs:
       EC2_CREATE_BASTION: ${{ needs.set-variables.outputs.ec2_create_bastion }}
       EC2_IMAGE_NAME: ${{ needs.set-variables.outputs.ec2_image_name }}
       EC2_INSTANCE_TYPE: ${{ needs.set-variables.outputs.ec2_instance_type }}
-      EC2_SSH_PORT: ${{ needs.set-variables.outputs.ec2_ssh_port }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -154,7 +151,7 @@ jobs:
           
           aws cloudformation deploy --template-file ./setup-pipelines/pipelines.yml --stack-name $APP_NAME-pipeline-infrastructure-$ENVIRONMENT --parameter-overrides EnvironmentName=$ENVIRONMENT AppName=$APP_NAME \
                                     RdsInstanceClass=$RDS_INSTANCE_CLASS RdsStorageGib=$RDS_STORE_GIB RdsEngine=$RDS_ENGINE RdsVersion=$RDS_VERSION DbName=$DB_NAME DbUserName=$DB_USER_NAME DbPort=$DB_PORT \
-                                    Ec2CreateBastion="$EC2_CREATE_BASTION" Ec2ImageName=$EC2_IMAGE_NAME Ec2InstanceType=$EC2_INSTANCE_TYPE Ec2SshPort=$EC2_SSH_PORT \
+                                    Ec2CreateBastion="$EC2_CREATE_BASTION" Ec2ImageName=$EC2_IMAGE_NAME Ec2InstanceType=$EC2_INSTANCE_TYPE \
                                     VpcCidr="$VPC_CIDR" VpcMaskForPrivate=$VPC_MASK_FOR_PRIVATE VpcMaskForPublic=$VPC_MASK_FOR_PUBLIC VpcNamesForPrivate="$VPC_NAMES_FOR_PRIVATE" VpcNamesForPublic="$VPC_NAMES_FOR_PUBLIC" VpcEnableS3Gateway="$VPC_ENABLE_S3_GATEWAY" \
                                     --capabilities CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM CAPABILITY_IAM
   

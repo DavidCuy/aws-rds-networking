@@ -7,18 +7,6 @@ Parameters:
   AppName:
     Type: AWS::SSM::Parameter::Value<String>
     Description: App Name.
-  VpcCidr:
-    Type: String
-    Description: Network subnet for routing
-    Default: '10.61.0.0/16'
-  VpcMaskForPrivate:
-    Type: String
-    Description: Mask to apply to IPs at private subnets
-    Default: '/24'
-  VpcMaskForPublic:
-    Type: String
-    Description: Mask to apply to IPs at public subnets
-    Default: '/24'
   VpcNamesForPrivate:
     Type: String
     Description: List for names of private subnets
@@ -82,10 +70,6 @@ Parameters:
     Type: String
     Description: Type of the Amazon EC2 instance to use for EC2 instances. Allowed values at https://aws.amazon.com/es/ec2/instance-types/
     Default: 't3.micro'
-  Ec2SshPort:
-    Type: Number
-    Description: SSH port for the EC2 instances.
-    Default: 22
 
 Conditions:
   CreateBastion: !Equals ['true', !Ref EC2CreateBastion]
@@ -96,9 +80,10 @@ Resources:
     Properties:
       TemplateURL: !Sub 'https://{{resolve:ssm:/config/${EnvironmentName}/${AppName}/infra/bucket/artifacts}}.s3.${AWS::URLSuffix}/${AppName}/deploys/networking-db/infra/networking/vpc.yaml'
       Parameters:
+        EnvironmentName: !Ref EnvironmentName
         AppName: !Ref AppName
         Name: !Sub ${EnvironmentName}-${AppName}-network
-        VpcCIDR: !Sub /config/infra/${AppName}/vpc-networking/cidr
+        VpcCIDR: !Sub /config/infra/${EnvironmentName}/${AppName}/vpc-networking/cidr
         PrivateSubnets: !Ref VpcNamesForPrivate
         PublicSubnets: !Ref VpcNamesForPublic
       TimeoutInMinutes: 60
@@ -108,10 +93,10 @@ Resources:
     Properties:
       TemplateURL: !Sub 'https://{{resolve:ssm:/config/${EnvironmentName}/${AppName}/infra/bucket/artifacts}}.s3.${AWS::URLSuffix}/${AppName}/deploys/networking-db/infra/networking/nat-ig-gateways.yaml'
       Parameters:
+        EnvironmentName: !Ref EnvironmentName
         AppName: !Ref AppName
         Name: !Sub ${EnvironmentName}-${AppName}-network-nat
         VPCID: !GetAtt StackVPCNetwork.Outputs.VPCID
-        PublicSubnets: !Ref VpcNamesForPublic
       TimeoutInMinutes: 60
 
   StackAccessNetworkRules:
@@ -119,12 +104,11 @@ Resources:
     Properties:
       TemplateURL: !Sub 'https://{{resolve:ssm:/config/${EnvironmentName}/${AppName}/infra/bucket/artifacts}}.s3.${AWS::URLSuffix}/${AppName}/deploys/networking-db/infra/networking/access-rules.yaml'
       Parameters:
+        EnvironmentName: !Ref EnvironmentName
         AppName: !Ref AppName
         Name: !Sub ${EnvironmentName}-${AppName}-Networking
         VPCID: !GetAtt StackVPCNetwork.Outputs.VPCID
         VpcEnableS3Gateway: !Ref VpcEnableS3Gateway
-        VpcStackName: !GetAtt StackVPCNetwork.Outputs.StackName
-        NatGatewatStackName: !GetAtt StackNatIG.Outputs.StackName
         InternetGateway: !GetAtt StackNatIG.Outputs.InternetGateway
         PrivateSubnets: !Ref VpcNamesForPrivate
         PublicSubnets: !Ref VpcNamesForPublic
@@ -139,13 +123,9 @@ Resources:
         EnvironmentName: !Ref EnvironmentName
         AppName: !Ref AppName
         Name: !Sub ${EnvironmentName}-${AppName}-Business
-        PrivateRouteTable: !GetAtt StackAccessNetworkRules.Outputs.PrivateRouteTable
         VPCData: !GetAtt StackVPCNetwork.Outputs.VPCID
-        KeyPairSSM: !Sub '/config/infra/${AppName}/key-pair'
-        SourceCidr: 0.0.0.0/0
         LatestAMI: !Ref Ec2ImageName
         InstanceType: !Ref Ec2InstanceType
-        SshPort: !Ref Ec2SshPort
       TimeoutInMinutes: 60
   
   StackRDS:
@@ -153,12 +133,13 @@ Resources:
     Properties:
       TemplateURL: !Sub 'https://{{resolve:ssm:/config/${EnvironmentName}/${AppName}/infra/bucket/artifacts}}.s3.${AWS::URLSuffix}/${AppName}/deploys/networking-db/infra/rds.yaml'
       Parameters:
-        Environment: !Ref EnvironmentName
+        EnvironmentName: !Ref EnvironmentName
         AppName: !Ref AppName
         Name: !Sub ${EnvironmentName}-${AppName}-Data
         BastionSG: !If [CreateBastion, !GetAtt StackBastion.Outputs.BastionSG, '-']
         BastionCreated: !Ref EC2CreateBastion
         BusinessSG: !GetAtt StackAccessNetworkRules.Outputs.SG
+        ApplicationSG: !GetAtt StackAccessNetworkRules.Outputs.ApplicationSGId
         VPCData: !GetAtt StackVPCNetwork.Outputs.VPCID
 
         RdsInstanceClass: !Ref RdsInstanceClass
