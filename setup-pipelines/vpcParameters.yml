@@ -38,7 +38,7 @@ Mappings:
         Fn::Transform:
           Name: 'validate-ssm-subnet'
           Parameters:
-            Path: !Sub '/config/infra/${AppName}/vpc-networking/cidr-private-subnet/A'
+            Path: !Sub '/config/infra/${EnvironmentName}/${AppName}/vpc-networking/cidr-private-subnet/A'
             VpcCidr: !Ref VpcCidr
             SubnetMask: !Ref VpcMaskForPrivate
     B:
@@ -46,7 +46,7 @@ Mappings:
         Fn::Transform:
           Name: 'validate-ssm-subnet'
           Parameters:
-            Path: !Sub '/config/infra/${AppName}/vpc-networking/cidr-private-subnet/B'
+            Path: !Sub '/config/infra/${EnvironmentName}/${AppName}/vpc-networking/cidr-private-subnet/B'
             VpcCidr: !Ref VpcCidr
             SubnetMask: !Ref VpcMaskForPrivate
     C:
@@ -54,7 +54,7 @@ Mappings:
         Fn::Transform:
           Name: 'validate-ssm-subnet'
           Parameters:
-            Path: !Sub '/config/infra/${AppName}/vpc-networking/cidr-private-subnet/C'
+            Path: !Sub '/config/infra/${EnvironmentName}/${AppName}/vpc-networking/cidr-private-subnet/C'
             VpcCidr: !Ref VpcCidr
             SubnetMask: !Ref VpcMaskForPrivate
   PublicSubnetMap:
@@ -63,7 +63,7 @@ Mappings:
         Fn::Transform:
           Name: 'validate-ssm-subnet'
           Parameters:
-            Path: !Sub '/config/infra/${AppName}/vpc-networking/cidr-public-subnet/A'
+            Path: !Sub '/config/infra/${EnvironmentName}/${AppName}/vpc-networking/cidr-public-subnet/A'
             VpcCidr: !Ref VpcCidr
             SubnetMask: !Ref VpcMaskForPublic
     B:
@@ -71,7 +71,7 @@ Mappings:
         Fn::Transform:
           Name: 'validate-ssm-subnet'
           Parameters:
-            Path: !Sub '/config/infra/${AppName}/vpc-networking/cidr-public-subnet/B'
+            Path: !Sub '/config/infra/${EnvironmentName}/${AppName}/vpc-networking/cidr-public-subnet/B'
             VpcCidr: !Ref VpcCidr
             SubnetMask: !Ref VpcMaskForPublic
     C:
@@ -79,7 +79,7 @@ Mappings:
         Fn::Transform:
           Name: 'validate-ssm-subnet'
           Parameters:
-            Path: !Sub '/config/infra/${AppName}/vpc-networking/cidr-public-subnet/C'
+            Path: !Sub '/config/infra/${EnvironmentName}/${AppName}/vpc-networking/cidr-public-subnet/C'
             VpcCidr: !Ref VpcCidr
             SubnetMask: !Ref VpcMaskForPublic
   
@@ -87,7 +87,7 @@ Resources:
   SSMVpcNetworkCidr:
     Type: 'AWS::SSM::Parameter'
     Properties:
-      Name: !Sub '/config/infra/${AppName}/vpc-networking/cidr'
+      Name: !Sub '/config/infra/${EnvironmentName}/${AppName}/vpc-networking/cidr'
       Tier: Standard
       Type: String
       Value: !Ref VpcCidr
@@ -97,7 +97,7 @@ Resources:
     - 'SSMCidrNetworkPrivateSubnet${SubnetName}':
         Type: 'AWS::SSM::Parameter'
         Properties:
-          Name: !Sub '/config/infra/${AppName}/vpc-networking/cidr-private-subnet/${SubnetName}'
+          Name: !Sub '/config/infra/${EnvironmentName}/${AppName}/vpc-networking/cidr-private-subnet/${SubnetName}'
           Tier: Standard
           Type: String
           Value: !FindInMap 
@@ -110,7 +110,7 @@ Resources:
     - 'SSMCidrNetworkPublicSubnet${SubnetName}':
         Type: 'AWS::SSM::Parameter'
         Properties:
-          Name: !Sub '/config/infra/${AppName}/vpc-networking/cidr-public-subnet/${SubnetName}'
+          Name: !Sub '/config/infra/${EnvironmentName}/${AppName}/vpc-networking/cidr-public-subnet/${SubnetName}'
           Tier: Standard
           Type: String
           Value: !FindInMap 

@@ -7,18 +7,6 @@ Parameters:
   AppName:
     Type: AWS::SSM::Parameter::Value<String>
     Description: App Name.
-  VpcCidr:
-    Type: String
-    Description: Network subnet for routing
-    Default: '10.61.0.0/16'
-  VpcMaskForPrivate:
-    Type: String
-    Description: Mask to apply to IPs at private subnets
-    Default: '/24'
-  VpcMaskForPublic:
-    Type: String
-    Description: Mask to apply to IPs at public subnets
-    Default: '/24'
   VpcNamesForPrivate:
     Type: String
     Description: List for names of private subnets
