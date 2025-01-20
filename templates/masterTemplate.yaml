@@ -108,12 +108,11 @@ Resources:
     Properties:
       TemplateURL: !Sub 'https://{{resolve:ssm:/config/${EnvironmentName}/${AppName}/infra/bucket/artifacts}}.s3.${AWS::URLSuffix}/${AppName}/deploys/networking-db/infra/networking/access-rules.yaml'
       Parameters:
+        EnvironmentName: !Ref EnvironmentName
         AppName: !Ref AppName
         Name: !Sub ${EnvironmentName}-${AppName}-Networking
         VPCID: !GetAtt StackVPCNetwork.Outputs.VPCID
         VpcEnableS3Gateway: !Ref VpcEnableS3Gateway
-        VpcStackName: !GetAtt StackVPCNetwork.Outputs.StackName
-        NatGatewatStackName: !GetAtt StackNatIG.Outputs.StackName
         InternetGateway: !GetAtt StackNatIG.Outputs.InternetGateway
         PrivateSubnets: !Ref VpcNamesForPrivate
         PublicSubnets: !Ref VpcNamesForPublic

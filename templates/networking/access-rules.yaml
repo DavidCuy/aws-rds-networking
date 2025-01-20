@@ -3,6 +3,15 @@ Transform: 'AWS::LanguageExtensions'
 Description: Configure associations to allow access to resource.
 
 Parameters:
+  EnvironmentName:
+    Description: Specify the Environment type of the stack.
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - qa
+      - staging
+      - prod
   AppName:
     Type: String
     ConstraintDescription: '[a-z]+'
@@ -14,14 +23,6 @@ Parameters:
   VPCID:
     Type: AWS::EC2::VPC::Id
     Description: Choose which VPC the security groups should be deployed to
-  
-  VpcStackName:
-    Type: String
-    Description: Name of the vpc stack
-  
-  NatGatewatStackName:
-    Type: String
-    Description: Name of the nat gateway stack
 
   PrivateSubnets:
     Type: CommaDelimitedList
@@ -90,6 +91,13 @@ Resources:
       RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
+  
+  InternetEgressAssociationIpv6:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationIpv6CidrBlock: "::/0"
+      GatewayId: !Ref InternetGateway
 
   ##############  Private subnet associations  ##############
   'Fn::ForEach::PrivateSubnetRouteTableAssociations':
@@ -98,9 +106,7 @@ Resources:
     - 'PrivateSubnet${SubnetName}RouteTableAssociation':
         Type: AWS::EC2::SubnetRouteTableAssociation
         Properties:
-          SubnetId:
-            Fn::ImportValue: 
-              'Fn::Sub': '${VpcStackName}-PrivateSubnet${SubnetName}'
+          SubnetId: !Sub '{{resolve:ssm:/config/infra/${EnvironmentName}/${AppName}/private_subnet/${SubnetName}}}'
           RouteTableId: !Ref PrivateRouteTable
 
   ##############  Public subnet associations  ##############
@@ -110,15 +116,13 @@ Resources:
     - 'PublicSubnet${SubnetName}RouteTableAssociation':
         Type: AWS::EC2::SubnetRouteTableAssociation
         Properties:
-          SubnetId:
-            Fn::ImportValue: 
-              'Fn::Sub': '${VpcStackName}-PublicSubnet${SubnetName}'
+          SubnetId: !Sub '{{resolve:ssm:/config/infra/${EnvironmentName}/${AppName}/public_subnet/${SubnetName}}}'
           RouteTableId: !Ref PublicRouteTable
 
   SSMSecurityGroup:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub "/config/infra/${AppName}/security-group"
+      Name: !Sub "/config/infra/${EnvironmentName}/${AppName}/security-group"
       Tier: "Standard"
       Type: "String"
       Value: !Ref SecurityGroup
