@@ -2,6 +2,15 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::LanguageExtensions'
 Description: This template deploys a VPC
 Parameters:
+  EnvironmentName:
+    Description: Specify the Environment type of the stack.
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - qa
+      - staging
+      - prod
   AppName:
     Type: String
     ConstraintDescription: '[a-z]+'
@@ -30,6 +39,20 @@ Mappings:
       Index: 1
     C:
       Index: 2
+  PrivateSubnetsMap:
+    A:
+      Index: 0
+    B:
+      Index: 1
+    C:
+      Index: 2
+  PublicSubnetsMap:
+    A:
+      Index: 3
+    B:
+      Index: 4
+    C:
+      Index: 5
 
 Resources:
   VPC:
@@ -42,6 +65,11 @@ Resources:
       Tags:
       - Key: Name
         Value: !Sub '${Name}-vpc'
+  Ipv6CidrBlock:
+    Type: AWS::EC2::VPCCidrBlock
+    Properties:
+      VpcId: !Ref VPC
+      AmazonProvidedIpv6CidrBlock: true
 
   #PRIVATE SUBNETS
   'Fn::ForEach::PrivateSubnetsLoop':
@@ -57,8 +85,14 @@ Resources:
               - !Ref SubnetName
               - Index
             - !GetAZs
-          CidrBlock: !Sub '{{resolve:ssm:/config/infra/${AppName}/vpc-networking/cidr-private-subnet/${SubnetName}}}'
+          CidrBlock: !Sub '{{resolve:ssm:/config/infra/${EnvironmentName}/${AppName}/vpc-networking/cidr-private-subnet/${SubnetName}}}'
           MapPublicIpOnLaunch: false
+          Ipv6CidrBlock: !Select
+            - !FindInMap
+              - PrivateSubnetsMap
+              - !Ref SubnetName
+              - Index
+            - !Cidr [ !Select [ 0, !GetAtt VPC.Ipv6CidrBlocks], 6, 64 ]
           Tags:
           - Key: Name
             Value: !Sub '${Name}-private-subnet-${SubnetName}'
@@ -72,7 +106,7 @@ Resources:
       - 'Private${Property}${SubnetName}':
           Type: AWS::SSM::Parameter
           Properties:
-            Name: !Sub "/config/infra/${AppName}/private_subnet/${SubnetName}"
+            Name: !Sub "/config/infra/${EnvironmentName}/${AppName}/private_subnet/${SubnetName}"
             Type: String
             Value: !GetAtt 
               - !Sub 'PrivateSubnet${SubnetName}'
@@ -92,8 +126,14 @@ Resources:
               - !Ref SubnetName
               - Index
             - !GetAZs
-          CidrBlock: !Sub '{{resolve:ssm:/config/infra/${AppName}/vpc-networking/cidr-public-subnet/${SubnetName}}}'
+          CidrBlock: !Sub '{{resolve:ssm:/config/infra/${EnvironmentName}/${AppName}/vpc-networking/cidr-public-subnet/${SubnetName}}}'
           MapPublicIpOnLaunch: true
+          Ipv6CidrBlock: !Select
+            - !FindInMap
+              - PublicSubnetsMap
+              - !Ref SubnetName
+              - Index
+            - !Cidr [ !Select [ 0, !GetAtt VPC.Ipv6CidrBlocks], 6, 64 ]
           Tags:
           - Key: Name
             Value: !Sub '${Name}-public-subnet-${SubnetName}'
@@ -107,7 +147,7 @@ Resources:
       - 'Public${Property}${SubnetName}':
           Type: AWS::SSM::Parameter
           Properties:
-            Name: !Sub "/config/infra/${AppName}/public_subnet/${SubnetName}"
+            Name: !Sub "/config/infra/${EnvironmentName}/${AppName}/public_subnet/${SubnetName}"
             Type: String
             Value: !GetAtt 
               - !Sub 'PublicSubnet${SubnetName}'
@@ -139,8 +179,6 @@ Outputs:
         - [SubnetId]
         - 'Private${Property}${SubnetName}Out':
             Value: !GetAtt [!Sub 'PrivateSubnet${SubnetName}', !Ref Property]
-            Export:
-              Name: !Sub '${AWS::StackName}-PrivateSubnet${SubnetName}'
 
   'Fn::ForEach::PublicSubnetOutputs':
     - SubnetName
@@ -150,5 +188,3 @@ Outputs:
         - [SubnetId]
         - 'Public${Property}${SubnetName}Out':
             Value: !GetAtt [!Sub 'PublicSubnet${SubnetName}', !Ref Property]
-            Export:
-              Name: !Sub '${AWS::StackName}-PublicSubnet${SubnetName}'

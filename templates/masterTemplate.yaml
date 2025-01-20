@@ -84,9 +84,10 @@ Resources:
     Properties:
       TemplateURL: !Sub 'https://{{resolve:ssm:/config/${EnvironmentName}/${AppName}/infra/bucket/artifacts}}.s3.${AWS::URLSuffix}/${AppName}/deploys/networking-db/infra/networking/vpc.yaml'
       Parameters:
+        EnvironmentName: !Ref EnvironmentName
         AppName: !Ref AppName
         Name: !Sub ${EnvironmentName}-${AppName}-network
-        VpcCIDR: !Sub /config/infra/${AppName}/vpc-networking/cidr
+        VpcCIDR: !Sub /config/infra/${EnvironmentName}/${AppName}/vpc-networking/cidr
         PrivateSubnets: !Ref VpcNamesForPrivate
         PublicSubnets: !Ref VpcNamesForPublic
       TimeoutInMinutes: 60
