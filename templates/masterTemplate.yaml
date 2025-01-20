@@ -101,7 +101,6 @@ Resources:
         AppName: !Ref AppName
         Name: !Sub ${EnvironmentName}-${AppName}-network-nat
         VPCID: !GetAtt StackVPCNetwork.Outputs.VPCID
-        PublicSubnets: !Ref VpcNamesForPublic
       TimeoutInMinutes: 60
 
   StackAccessNetworkRules:
