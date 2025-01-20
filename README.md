@@ -17,7 +17,7 @@ name = "my-awesome-project" # Nombre del proyecto. Será utilizado como prefijo 
 description = "Awesome project to deploy a full RDS network infra using cloudformation" # Descripción del proyecto
 
 [networking.config.vpc] # Sección de la configuración de la red privada
-cidr = "10.61.0.0/16" # Rango de ips con notación CIDR para la VPC
+cidr = "10.64.0.0/16" # Rango de ips con notación CIDR para la VPC
 mask_for_private = "/24" # Máscara de subred a aplicar a la VPC para generar las subnets privadas
 mask_for_public = "/24" # Máscara de subred a aplicar a la VPC para generar las subnets públicas
 names_for_private = 'A,B,C' # Cadena separada por comas para indicar las redes privadas a crear. Sólo se permiten los valores [A, B, C] sin repetir
@@ -39,8 +39,8 @@ db_port = "5432" # Puerto de la base de datos
 
 [ec2.bastion] # Sección de configuración del bastion
 create_bastion = 'true' # Indica si se debe crear el bastion o no
-image_name = "/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-x86_64-gp2" # Imagen a utilizar - Se recomienda utilizar imágenes de Linux AWS para facilitar las conexiones de tunel a través del session-manager
-instance_type = "t3.micro" # Tipo de instancia de la EC2 a crear
+image_name = "ami-043a5a82b6cf98947" # Imagen a utilizar - Se recomienda utilizar imágenes de Linux AWS para facilitar las conexiones de tunel a través del session-manager
+instance_type = "t3.nano" # Tipo de instancia de la EC2 a crear
 
 ```
 

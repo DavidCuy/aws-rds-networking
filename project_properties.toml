@@ -3,7 +3,7 @@ name = "my-awesome-project"
 description = "Awesome project to deploy a full RDS network infra using cloudformation"
 
 [networking.config.vpc]
-cidr = "10.61.0.0/16"
+cidr = "10.64.0.0/16"
 mask_for_private = "/24"
 mask_for_public = "/24"
 names_for_private = 'A,B,C' # Use comma delimeter to separate names. Use max 3 elements
@@ -23,5 +23,5 @@ db_port = "5432"
 
 [ec2.bastion]
 create_bastion = 'true'
-image_name = "/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-x86_64-gp2"
+image_name = "ami-043a5a82b6cf98947"
 instance_type = "t3.nano"
