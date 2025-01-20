@@ -73,7 +73,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for Application
-      VpcId: !Ref VPC
+      VpcId: !Ref VPCID
   
   PrivateRouteTable:
     Type: AWS::EC2::RouteTable
